@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.2'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'jacoco'
 }
 
 group = 'com.ejm'
@@ -33,4 +34,45 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacoco {
+	toolVersion = "0.8.9"
+}
+
+jacocoTestReport {
+	dependsOn test
+
+	afterEvaluate {
+		getClassDirectories().setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					"com/ejm/promotion/domain/**/controller/*",
+					"com/ejm/promotion/domain/**/entity/*",
+					"com/ejm/promotion/domain/**/dto/*",
+					"com/ejm/promotion/domain/**/repository/*",
+					"com/ejm/promotion/domain/**/exception/*",
+					"com/ejm/promotion/global/**/*",
+					"com/ejm/promotion/PromotionApplication.class",
+			])
+		}))
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			element = 'CLASS'
+
+			limit {
+				counter = 'BRANCH'
+				minimum = 1.0
+			}
+
+			limit {
+				counter = 'LINE'
+				minimum = 1.0
+			}
+		}
+	}
 }
