@@ -1,5 +1,7 @@
 package com.ejm.promotion.domain.user.repository;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Repository;
 
 import com.ejm.promotion.domain.user.entity.User;
@@ -17,5 +19,9 @@ public class UserRepository {
 
 	public void insertUser(User user) {
 		entityManager.persist(user);
+	}
+
+	public Optional<User> findById(Long userId) {
+		return Optional.ofNullable(entityManager.find(User.class, userId));
 	}
 }
