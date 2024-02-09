@@ -3,13 +3,16 @@ package com.ejm.promotion.domain.user.controller;
 import static com.ejm.promotion.global.common.ApiResponse.Status.*;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ejm.promotion.domain.user.dto.request.UserPermissionDto;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
 import com.ejm.promotion.domain.user.service.UserService;
+import com.ejm.promotion.domain.userpermission.entity.UserPermission;
 import com.ejm.promotion.global.common.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,19 @@ public class UserController {
 
 		return ResponseEntity.ok(ApiResponse.<Void>builder()
 			.status(SUCCESS)
+			.build());
+	}
+
+	@PostMapping("/{userId}/permission")
+	public ResponseEntity<ApiResponse<Boolean>> checkPermission(
+		@PathVariable Long userId,
+		@RequestBody UserPermissionDto userPermissionDto
+	) {
+		userService.checkPermission(userId, userPermissionDto);
+
+		return ResponseEntity.ok(ApiResponse.<Boolean>builder()
+			.status(SUCCESS)
+			.result(true)
 			.build());
 	}
 }
