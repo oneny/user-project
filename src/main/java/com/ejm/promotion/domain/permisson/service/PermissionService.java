@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PermissionService {
 
-	private final PermissionRepository permissionRepository;
 	private final UserRepository userRepository;
+	private final PermissionRepository permissionRepository;
 	private final UserPermissionRepository userPermissionRepository;
 
 	@Transactional
