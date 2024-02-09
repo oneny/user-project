@@ -2,27 +2,29 @@ package com.ejm.promotion.domain.user.service;
 
 import static com.ejm.promotion.fixture.PermissionFixture.*;
 import static com.ejm.promotion.fixture.UserFixture.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.BDDMockito;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.ejm.promotion.domain.permisson.exception.NotFoundPermissionException;
 import com.ejm.promotion.domain.permisson.repository.PermissionRepository;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
+import com.ejm.promotion.domain.user.exception.NotFoundUserException;
 import com.ejm.promotion.domain.user.repository.UserRepository;
+import com.ejm.promotion.domain.userpermission.exception.NotFoundUserPermissionException;
 import com.ejm.promotion.domain.userpermission.repository.UserPermissionRepository;
-import com.ejm.promotion.fixture.PermissionFixture;
-import com.ejm.promotion.fixture.UserFixture;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -43,7 +45,7 @@ class UserServiceTest {
 	@ParameterizedTest(name = "담당자 등록 시 유효성 검사")
 	@MethodSource("provideInvalidUserRegistrationRequest")
 	void validateUserRegistrationRequest(UserRegistrationDto userRegistrationDto) {
-		Assertions.assertThatThrownBy(() -> userService.insertUser(userRegistrationDto))
+		assertThatThrownBy(() -> userService.insertUser(userRegistrationDto))
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 
@@ -63,6 +65,48 @@ class UserServiceTest {
 			.insertUser(any());
 	}
 
+	@Test
+	@DisplayName("담당자 권한 보유 체크 시 유효성 검증")
+	void validateUserPermissionDto() {
+		assertThatThrownBy(() -> userService.checkPermission(1L, INVALID_USER_PERMISSION))
+			.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	@DisplayName("담당자 권한 보유 체크 실패 테스트: 담당자 없음")
+	void notExistUserWithCheckPermission() {
+		given(userRepository.findById(1L))
+			.willReturn(Optional.empty());
+
+		assertThatThrownBy(() -> userService.checkPermission(1L, DEFAULT_USER_PERMISSION_REQUEST))
+			.isInstanceOf(NotFoundUserException.class);
+	}
+
+	@Test
+	@DisplayName("담당자 권한 보유 체크 실패 테스트: 권한 없음")
+	void notExistPermissionWithCheckPermission() {
+		given(userRepository.findById(1L))
+			.willReturn(Optional.ofNullable(DEFAULT_USER));
+		given(permissionRepository.findById(1L))
+			.willReturn(Optional.empty());
+
+		assertThatThrownBy(() -> userService.checkPermission(1L, DEFAULT_USER_PERMISSION_REQUEST))
+			.isInstanceOf(NotFoundPermissionException.class);
+	}
+
+	@Test
+	@DisplayName("담당자 권한 보유 체크 실패 테스트: 유저 권한 없음")
+	void notExistUserPermissionWithCheckPermission() {
+		given(userRepository.findById(1L))
+			.willReturn(Optional.ofNullable(DEFAULT_USER));
+		given(permissionRepository.findById(1L))
+			.willReturn(Optional.ofNullable(DEFAULT_PERMISSION));
+		given(userPermissionRepository.findByUserIdAndPermissionId(DEFAULT_USER, DEFAULT_PERMISSION))
+			.willReturn(Optional.empty());
+
+		assertThatThrownBy(() -> userService.checkPermission(1L, DEFAULT_USER_PERMISSION_REQUEST))
+			.isInstanceOf(NotFoundUserPermissionException.class);
+	}
 
 	private static Stream<Arguments> provideInvalidUserRegistrationRequest() {
 		return Stream.of(

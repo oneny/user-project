@@ -14,6 +14,7 @@ import com.ejm.promotion.domain.user.dto.request.UserPermissionDto;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
 import com.ejm.promotion.domain.user.entity.User;
 import com.ejm.promotion.domain.user.entity.UserType;
+import com.ejm.promotion.domain.user.exception.NotFoundUserException;
 import com.ejm.promotion.domain.user.repository.UserRepository;
 import com.ejm.promotion.domain.userpermission.entity.UserPermission;
 import com.ejm.promotion.domain.userpermission.exception.NotFoundUserPermissionException;
@@ -46,7 +47,7 @@ public class UserService {
 		validateUserPermissionDto(userPermissionDto);
 
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NotFoundUserPermissionException("유저가 없습니다."));
+			.orElseThrow(() -> new NotFoundUserException("유저가 없습니다."));
 		Permission permission = permissionRepository.findById(userPermissionDto.getPermissionId())
 			.orElseThrow(() -> new NotFoundPermissionException("권한이 없습니다."));
 
