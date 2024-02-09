@@ -34,4 +34,8 @@ public class UserPermissionRepository {
 
 		return resultList.stream().findAny();
 	}
+
+	public void delete(UserPermission userPermission) {
+		entityManager.remove(userPermission);
+	}
 }

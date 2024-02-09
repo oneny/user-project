@@ -13,6 +13,7 @@ import com.ejm.promotion.domain.user.exception.NotFoundUserException;
 import com.ejm.promotion.domain.user.repository.UserRepository;
 import com.ejm.promotion.domain.userpermission.entity.UserPermission;
 import com.ejm.promotion.domain.userpermission.exception.AlreadyGrantPermissionException;
+import com.ejm.promotion.domain.userpermission.exception.NotFoundUserPermissionException;
 import com.ejm.promotion.domain.userpermission.repository.UserPermissionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,20 @@ public class PermissionService {
 			});
 
 		userPermissionRepository.insertUserPermission(toEntity(user, permission));
+	}
+
+	@Transactional
+	public void denyUserPermission(Long permissionId, PermissionUserDto permissionUserDto) {
+		validatePermissionUserDto(permissionUserDto);
+
+		User user = userRepository.findById(permissionUserDto.getUserId())
+			.orElseThrow(() -> new NotFoundUserException("유저가 없습니다."));
+		Permission permission = permissionRepository.findById(permissionId)
+			.orElseThrow(() -> new NotFoundPermissionException("권한이 없습니다."));
+		UserPermission userPermission = userPermissionRepository.findByUserIdAndPermissionId(user, permission)
+			.orElseThrow(() -> new NotFoundUserPermissionException("권한을 가지고 있지 않습니다."));
+
+		userPermissionRepository.delete(userPermission);
 	}
 
 	private void validatePermissionUserDto(PermissionUserDto permissionUserDto) {
