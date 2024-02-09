@@ -1,5 +1,7 @@
 package com.ejm.promotion.domain.user.dto.request;
 
+import java.util.ArrayList;
+
 import com.ejm.promotion.domain.user.entity.User;
 import com.ejm.promotion.domain.user.entity.UserType;
 
@@ -18,6 +20,7 @@ public class UserRegistrationDto {
 		return User.builder()
 			.name(name)
 			.userType(UserType.valueOf(userType))
+			.userPermissionList(new ArrayList<>())
 			.build();
 	}
 }

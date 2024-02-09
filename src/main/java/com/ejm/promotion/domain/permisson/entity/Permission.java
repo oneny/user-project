@@ -26,4 +26,8 @@ public class Permission extends BaseTimeEntity {
 
 	@Enumerated(EnumType.STRING)
 	private PermissionType permissionType;
+
+	public boolean isDefaultManagerPermission() {
+		return permissionType.equals(PermissionType.SELECT) || permissionType.equals(PermissionType.INSERT);
+	}
 }
