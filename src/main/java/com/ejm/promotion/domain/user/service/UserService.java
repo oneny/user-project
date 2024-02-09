@@ -8,12 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.ejm.promotion.domain.permisson.entity.Permission;
+import com.ejm.promotion.domain.permisson.exception.NotFoundPermissionException;
 import com.ejm.promotion.domain.permisson.repository.PermissionRepository;
+import com.ejm.promotion.domain.user.dto.request.UserPermissionDto;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
 import com.ejm.promotion.domain.user.entity.User;
 import com.ejm.promotion.domain.user.entity.UserType;
 import com.ejm.promotion.domain.user.repository.UserRepository;
 import com.ejm.promotion.domain.userpermission.entity.UserPermission;
+import com.ejm.promotion.domain.userpermission.exception.NotFoundUserPermissionException;
 import com.ejm.promotion.domain.userpermission.repository.UserPermissionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,23 @@ public class UserService {
 		userLeaderPermissions.forEach(userPermissionRepository::insertUserPermission);
 
 		userRepository.insertUser(user);
+	}
+
+	@Transactional(readOnly = true)
+	public void checkPermission(Long userId, UserPermissionDto userPermissionDto) {
+		validateUserPermissionDto(userPermissionDto);
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundUserPermissionException("유저가 없습니다."));
+		Permission permission = permissionRepository.findById(userPermissionDto.getPermissionId())
+			.orElseThrow(() -> new NotFoundPermissionException("권한이 없습니다."));
+
+		userPermissionRepository.findByUserIdAndPermissionId(user, permission)
+			.orElseThrow(() -> new NotFoundUserPermissionException("권한을 가지고 있지 않습니다."));
+	}
+
+	private void validateUserPermissionDto(UserPermissionDto userPermissionDto) {
+		Assert.notNull(userPermissionDto.getPermissionId(), "권한 id를 입력하세요.");
 	}
 
 	private void validateUserRegistrationDto(UserRegistrationDto userRegistrationDto) {
