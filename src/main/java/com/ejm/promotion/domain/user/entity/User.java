@@ -6,6 +6,7 @@ import java.util.List;
 import com.ejm.promotion.domain.permisson.entity.Permission;
 import com.ejm.promotion.domain.userpermission.entity.UserPermission;
 import com.ejm.promotion.global.common.BaseTimeEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,6 +39,7 @@ public class User extends BaseTimeEntity {
 	@Enumerated(EnumType.STRING)
 	private UserType userType;
 
+	@JsonIgnore
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<UserPermission> userPermissionList = new ArrayList<>();
 

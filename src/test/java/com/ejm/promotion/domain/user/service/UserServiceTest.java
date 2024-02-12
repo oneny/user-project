@@ -3,6 +3,7 @@ package com.ejm.promotion.domain.user.service;
 import static com.ejm.promotion.fixture.PermissionFixture.*;
 import static com.ejm.promotion.fixture.UserFixture.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.util.Optional;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.ejm.promotion.domain.permisson.exception.NotFoundPermissionException;
 import com.ejm.promotion.domain.permisson.repository.PermissionRepository;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
+import com.ejm.promotion.domain.user.dto.response.PermissionResponseDto;
 import com.ejm.promotion.domain.user.exception.NotFoundUserException;
 import com.ejm.promotion.domain.user.repository.UserRepository;
 import com.ejm.promotion.domain.userpermission.exception.NotFoundUserPermissionException;
@@ -36,6 +38,20 @@ class UserServiceTest {
 	PermissionRepository permissionRepository;
 	@Mock
 	UserPermissionRepository userPermissionRepository;
+
+	private static Stream<Arguments> provideInvalidUserRegistrationRequest() {
+		return Stream.of(
+			Arguments.arguments(INVALID_TYPE_USER_REGISTRATION),
+			Arguments.arguments(INVALID_NAME_USER_REGISTRATION)
+		);
+	}
+
+	private static Stream<Arguments> provideUserRegistrationRequest() {
+		return Stream.of(
+			Arguments.arguments(DEFAULT_LEADER_USER_REGISTRATION, 4),
+			Arguments.arguments(DEFAULT_MANAGER_USER_REGISTRATION, 2)
+		);
+	}
 
 	@BeforeEach
 	void setUp() {
@@ -108,17 +124,22 @@ class UserServiceTest {
 			.isInstanceOf(NotFoundUserPermissionException.class);
 	}
 
-	private static Stream<Arguments> provideInvalidUserRegistrationRequest() {
-		return Stream.of(
-			Arguments.arguments(INVALID_TYPE_USER_REGISTRATION),
-			Arguments.arguments(INVALID_NAME_USER_REGISTRATION)
-		);
-	}
+	@Test
+	@DisplayName("담당자 권한 보유 체크 성공 테스트")
+	void successCheckUserPermission() {
+		given(userRepository.findById(1L))
+			.willReturn(Optional.ofNullable(DEFAULT_USER));
+		given(permissionRepository.findById(1L))
+			.willReturn(Optional.ofNullable(DEFAULT_PERMISSION));
+		given(userPermissionRepository.findByUserIdAndPermissionId(DEFAULT_USER, DEFAULT_PERMISSION))
+			.willReturn(Optional.ofNullable(DEFAULT_USER_PERMISSION));
 
-	private static Stream<Arguments> provideUserRegistrationRequest() {
-		return Stream.of(
-			Arguments.arguments(DEFAULT_LEADER_USER_REGISTRATION, 4),
-			Arguments.arguments(DEFAULT_MANAGER_USER_REGISTRATION, 2)
+		PermissionResponseDto permissionResponseDto = userService.checkPermission(1L, DEFAULT_USER_PERMISSION_REQUEST);
+
+		assertAll(
+			() -> assertThat(permissionResponseDto.getId()).isEqualTo(1L),
+			() -> assertThat(permissionResponseDto.getUser().getId()).isEqualTo(1L),
+			() -> assertThat(permissionResponseDto.getPermission().getId()).isEqualTo(1L)
 		);
 	}
 }

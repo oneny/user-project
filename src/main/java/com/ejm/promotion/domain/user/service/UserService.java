@@ -12,6 +12,7 @@ import com.ejm.promotion.domain.permisson.exception.NotFoundPermissionException;
 import com.ejm.promotion.domain.permisson.repository.PermissionRepository;
 import com.ejm.promotion.domain.user.dto.request.UserPermissionDto;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
+import com.ejm.promotion.domain.user.dto.response.PermissionResponseDto;
 import com.ejm.promotion.domain.user.entity.User;
 import com.ejm.promotion.domain.user.entity.UserType;
 import com.ejm.promotion.domain.user.exception.NotFoundUserException;
@@ -43,7 +44,7 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public void checkPermission(Long userId, UserPermissionDto userPermissionDto) {
+	public PermissionResponseDto checkPermission(Long userId, UserPermissionDto userPermissionDto) {
 		validateUserPermissionDto(userPermissionDto);
 
 		User user = userRepository.findById(userId)
@@ -51,8 +52,10 @@ public class UserService {
 		Permission permission = permissionRepository.findById(userPermissionDto.getPermissionId())
 			.orElseThrow(() -> new NotFoundPermissionException("권한이 없습니다."));
 
-		userPermissionRepository.findByUserIdAndPermissionId(user, permission)
+		UserPermission userPermission = userPermissionRepository.findByUserIdAndPermissionId(user, permission)
 			.orElseThrow(() -> new NotFoundUserPermissionException("권한을 가지고 있지 않습니다."));
+
+		return PermissionResponseDto.from(userPermission);
 	}
 
 	private void validateUserPermissionDto(UserPermissionDto userPermissionDto) {

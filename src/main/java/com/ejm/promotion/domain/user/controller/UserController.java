@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ejm.promotion.domain.user.dto.request.UserPermissionDto;
 import com.ejm.promotion.domain.user.dto.request.UserRegistrationDto;
+import com.ejm.promotion.domain.user.dto.response.PermissionResponseDto;
 import com.ejm.promotion.domain.user.service.UserService;
 import com.ejm.promotion.domain.userpermission.entity.UserPermission;
 import com.ejm.promotion.global.common.ApiResponse;
@@ -34,15 +35,14 @@ public class UserController {
 	}
 
 	@PostMapping("/{userId}/permission")
-	public ResponseEntity<ApiResponse<Boolean>> checkPermission(
+	public ResponseEntity<ApiResponse<PermissionResponseDto>> checkPermission(
 		@PathVariable Long userId,
 		@RequestBody UserPermissionDto userPermissionDto
 	) {
-		userService.checkPermission(userId, userPermissionDto);
 
-		return ResponseEntity.ok(ApiResponse.<Boolean>builder()
+		return ResponseEntity.ok(ApiResponse.<PermissionResponseDto>builder()
 			.status(SUCCESS)
-			.result(true)
+			.result(userService.checkPermission(userId, userPermissionDto))
 			.build());
 	}
 }

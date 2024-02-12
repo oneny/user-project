@@ -19,6 +19,7 @@ public class PermissionFixture {
 		.toList();
 
 	public static Permission DEFAULT_PERMISSION = Permission.builder()
+		.id(1L)
 		.permissionType(PermissionType.INSERT)
 		.build();
 
@@ -30,6 +31,7 @@ public class PermissionFixture {
 		.build();
 
 	public static UserPermission DEFAULT_USER_PERMISSION = UserPermission.builder()
+		.id(1L)
 		.user(DEFAULT_USER)
 		.permission(DEFAULT_PERMISSION)
 		.build();
